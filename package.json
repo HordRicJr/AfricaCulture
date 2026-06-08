@@ -1,0 +1,35 @@
+{
+  "name": "africaculture-chat",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "React SPA chat interface for the AfricaCulture agent on Microsoft AI Foundry (secured by a BFF proxy).",
+  "scripts": {
+    "dev": "concurrently -n web,bff -c blue,magenta \"npm:dev:web\" \"npm:dev:bff\"",
+    "dev:web": "vite",
+    "dev:bff": "npm --prefix server run dev",
+    "build": "tsc --noEmit && vite build",
+    "build:bff": "npm --prefix server run build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "install:all": "npm install && npm --prefix server install"
+  },
+  "dependencies": {
+    "dompurify": "^3.2.4",
+    "lucide-react": "^0.469.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "concurrently": "^9.1.2",
+    "postcss": "^8.5.1",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.7"
+  }
+}
