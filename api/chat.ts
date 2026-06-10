@@ -1,79 +1,52 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import express from "express";
+import cors from "cors";
+import { chatRouter } from "../server/src/routes/chat";
 
 /**
  * Vercel Serverless Function for POST /api/chat
  *
- * This function wraps the Express chatRouter from the BFF server code.
- * Vercel file-based routing maps /api/chat → api/chat.ts.
+ * Vercel file-based routing: /api/chat → api/chat.ts
+ * The chatRouter handles POST "/" which maps to POST /api/chat.
  *
- * Key design decisions:
- * - validateConfig() is called inside the handler (not at module level)
- *   so that errors produce a 500 JSON response instead of an opaque crash.
- * - All imports from ../server/src/ are lazy to improve cold-start resilience.
+ * We do NOT call validateConfig() here — it reads config at module level
+ * and would crash the cold-start. Instead, we let Express + chatRouter
+ * handle the request normally. If env vars are missing, the Foundry call
+ * will fail with a descriptive 502 error from the route handler.
  */
 
-let app: any;
-let initialized = false;
-let initError: string | null = null;
+const app = express();
 
-function initApp() {
-  if (initialized) return;
-  initialized = true;
+app.use(cors({
+  origin: true,   // Allow all origins — Vercel handles domain security
+  credentials: true,
+}));
 
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const express = require("express");
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const cors = require("cors");
-    const { validateConfig } = require("../server/src/config");
-    const { chatRouter } = require("../server/src/routes/chat");
+app.use(express.json({ limit: "1mb" }));
+app.use("/", chatRouter);
 
-    validateConfig();
-
-    app = express();
-
-    app.use(cors({
-      origin: process.env.NODE_ENV === "production"
-        ? ["https://africaculture.vercel.app"]
-        : ["http://localhost:5173", "http://localhost:3000"],
-      credentials: true,
-    }));
-
-    app.use(express.json({ limit: "1mb" }));
-    app.use("/", chatRouter);
-
-    // Error handler so Express errors become JSON responses
-    app.use((err: any, _req: any, res: any, _next: any) => {
-      console.error("[api/chat] Express error:", err);
-      if (!res.headersSent) {
-        res.status(500).json({
-          error: err.message || "Erreur interne du serveur.",
-        });
-      }
+// Catch-all error handler
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error("[api/chat] Error:", err);
+  if (!res.headersSent) {
+    res.status(500).json({
+      error: err.message || "Erreur interne du serveur.",
     });
-  } catch (err: any) {
-    console.error("[api/chat] Initialization failed:", err);
-    initError = err.message || "Initialization failed";
   }
-}
+});
 
 export default (req: VercelRequest, res: VercelResponse) => {
-  // Only allow POST
-  if (req.method !== "POST") {
-    res.setHeader("Allow", "POST");
-    return res.status(405).json({ error: "Method not allowed. Use POST." });
+  // Only allow POST (and OPTIONS for CORS preflight)
+  if (req.method === "OPTIONS") {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    return res.status(204).end();
   }
 
-  // Initialize on first request (lazy)
-  initApp();
-
-  // If init failed, return a descriptive 500
-  if (initError || !app) {
-    console.error("[api/chat] App not initialized:", initError);
-    return res.status(500).json({
-      error: "Le serveur n'a pas pu s'initialiser. Vérifiez les variables d'environnement.",
-      detail: process.env.NODE_ENV === "development" ? initError : undefined,
-    });
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST, OPTIONS");
+    return res.status(405).json({ error: "Method not allowed. Use POST." });
   }
 
   return app(req, res);

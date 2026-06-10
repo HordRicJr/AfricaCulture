@@ -31,28 +31,30 @@ function stripTrailingSlash(value: string): string {
 }
 
 export const config = {
-  port: Number.parseInt(clean(process.env.PORT, "8787"), 10) || 8787,
-  corsOrigins: clean(process.env.CORS_ORIGINS, "http://localhost:5173")
-    .split(",")
-    .map((origin) => origin.trim())
-    .filter(Boolean),
+  get port() { return Number.parseInt(clean(process.env.PORT, "8787"), 10) || 8787; },
+  get corsOrigins() {
+    return clean(process.env.CORS_ORIGINS, "http://localhost:5173")
+      .split(",")
+      .map((origin) => origin.trim())
+      .filter(Boolean);
+  },
 
-  authMode: (clean(process.env.FOUNDRY_AUTH_MODE, "key") as AuthMode),
-  apiKey: clean(process.env.FOUNDRY_API_KEY),
+  get authMode() { return clean(process.env.FOUNDRY_AUTH_MODE, "key") as AuthMode; },
+  get apiKey() { return clean(process.env.FOUNDRY_API_KEY); },
 
-  mode: (clean(process.env.FOUNDRY_MODE, "agent") as FoundryMode),
-  projectEndpoint: stripTrailingSlash(clean(process.env.FOUNDRY_PROJECT_ENDPOINT)),
-  openaiEndpoint: stripTrailingSlash(clean(process.env.FOUNDRY_OPENAI_ENDPOINT)),
+  get mode() { return clean(process.env.FOUNDRY_MODE, "agent") as FoundryMode; },
+  get projectEndpoint() { return stripTrailingSlash(clean(process.env.FOUNDRY_PROJECT_ENDPOINT)); },
+  get openaiEndpoint() { return stripTrailingSlash(clean(process.env.FOUNDRY_OPENAI_ENDPOINT)); },
 
-  agentName: clean(process.env.FOUNDRY_AGENT_NAME),
-  agentVersion: clean(process.env.FOUNDRY_AGENT_VERSION, "1"),
-  model: clean(process.env.FOUNDRY_MODEL, "gpt-4.1"),
+  get agentName() { return clean(process.env.FOUNDRY_AGENT_NAME); },
+  get agentVersion() { return clean(process.env.FOUNDRY_AGENT_VERSION, "1"); },
+  get model() { return clean(process.env.FOUNDRY_MODEL, "gpt-4.1"); },
 
   /** Max characters accepted per message (mirrors the client cap). */
   maxInputLength: 4000,
   /** Max number of history messages forwarded upstream. */
   maxMessages: 50,
-} as const;
+};
 
 /** Fail fast at boot if a required variable for the chosen mode is missing. */
 export function validateConfig(): void {
