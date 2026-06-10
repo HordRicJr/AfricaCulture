@@ -70,7 +70,11 @@ const errorHandler: ErrorRequestHandler = (
 };
 app.use(errorHandler);
 
+console.log("=== API CHAT FILE LOADED ===");
+
 export default (req: VercelRequest, res: VercelResponse) => {
+  console.log("=== VERCEL HANDLER EXECUTED ===", req.method, req.url);
+
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
     res.setHeader("Access-Control-Allow-Origin", "*");
