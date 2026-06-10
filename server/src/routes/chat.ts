@@ -55,6 +55,7 @@ function normalizeMessages(input: unknown): WireMessage[] {
 }
 
 chatRouter.post("/", async (req: Request, res: ExpressResponse) => {
+  console.log(`[chatRouter] POST / reached!`);
   let messages: WireMessage[];
   let stream: boolean;
   try {

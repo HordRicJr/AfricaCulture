@@ -30,9 +30,29 @@ app.use(cors({
 
 app.use(express.json({ limit: "1mb" }));
 
+// Add logging to see what Express receives
+app.use((req, res, next) => {
+  console.log(`[Express Incoming] method=${req.method} url=${req.url} path=${req.path} originalUrl=${req.originalUrl}`);
+  next();
+});
+
 // chatRouter comes from server/src which has its own Express types.
 // The cast avoids a type mismatch between the two Express installations.
 app.use("/", chatRouter as unknown as express.RequestHandler);
+
+// Add logging to prove Express generates the 404
+app.use((req, res, next) => {
+  const debugInfo = {
+    message: "Express 404: Route not matched inside Express stack",
+    receivedUrl: req.url,
+    receivedPath: req.path,
+    originalUrl: req.originalUrl,
+    method: req.method,
+    chatRouterReached: false
+  };
+  console.log(`[Express 404]`, debugInfo);
+  res.status(404).json(debugInfo);
+});
 
 // Catch-all error handler (Express requires the 4-arg signature)
 const errorHandler: ErrorRequestHandler = (
