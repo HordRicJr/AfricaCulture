@@ -4,7 +4,7 @@ import express from "express";
 import cors from "cors";
 // Vercel treats `server/` as an external package (due to package.json)
 // so it doesn't transpile it. We must import the compiled JS version.
-import chatModule from "../server/dist/routes/chat.js";
+import * as chatModule from "../server/dist/routes/chat.js";
 
 // ESM/CJS interop fallback
 const chatRouter = (chatModule as any).chatRouter || (chatModule as any).default || chatModule;
