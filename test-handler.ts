@@ -1,0 +1,1 @@
+import handler from './api/chat'; const req = { method: 'POST', url: '/api/chat', headers: {} }; const res = { setHeader: () => {}, status: (code) => ({ json: (d) => console.log('STATUS', code, d) }), end: () => console.log('END'), headersSent: false }; handler(req as any, res as any);
