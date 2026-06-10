@@ -2,7 +2,10 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import type { Request, Response, NextFunction, ErrorRequestHandler } from "express";
 import express from "express";
 import cors from "cors";
-import { chatRouter } from "../server/src/routes/chat";
+import chatModule from "../server/src/routes/chat";
+
+// ESM/CJS interop fallback
+const chatRouter = (chatModule as any).chatRouter || (chatModule as any).default || chatModule;
 
 /**
  * Vercel Serverless Function for POST /api/chat

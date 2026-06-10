@@ -9,6 +9,7 @@ import {
 } from "../foundryClient";
 
 export const chatRouter = Router();
+export default chatRouter;
 
 const ALLOWED_ROLES = new Set<ChatRole>(["user", "assistant", "system"]);
 
