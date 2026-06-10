@@ -77,19 +77,6 @@ Le SDK Python `azure-ai-projects` (`project_client.get_openai_client()`)
 résout sa `base_url` à **`{endpoint_du_projet}/openai/v1`**. L'appel à l'agent
 se fait donc sur :
 
-```
-POST https://africaculture-resource.services.ai.azure.com/api/projects/africaculture/openai/v1/responses
-```
-
-avec la référence d'agent transmise **dans le corps** de la requête :
-
-```jsonc
-{
-  "input": [{ "role": "user", "content": "..." }],
-  "stream": true,
-  "agent_reference": { "name": "AfricaCulture", "version": "2", "type": "agent_reference" }
-}
-```
 
 > Équivalent du sample Python (`extra_body={"agent_reference": {...}}`),
 > transposé en React/TypeScript via le BFF.
@@ -101,20 +88,7 @@ avec la référence d'agent transmise **dans le corps** de la requête :
 | `agent` | `{projet}/openai/v1/responses`                     | `agent_reference` (AfricaCulture v2) |
 | `model` | `{ressource}.openai.azure.com/openai/v1/responses` | `model: "gpt-4.1"`            |
 
-### À propos de gpt-4.1
 
-- Version du modèle : **`2025-04-14`** (le `2025-10-06` de
-  `azureml://registries/azure-openai/models/gpt-4.1/versions/2025-10-06` est la
-  version de packaging du registre).
-- Fenêtre de contexte ~1 047 576 tokens en entrée, 32 768 tokens en sortie.
-- Compatible **Responses API**, function calling, sorties structurées,
-  streaming SSE.
-
-### États granulaires de l'IA
-
-`useAgentChat` expose un statut : `idle` → `loading` → `streaming` → (`idle` | `error`).
-
----
 
 ## 3. Sécurité
 
