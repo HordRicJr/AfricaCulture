@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { validateConfig } from "../server/dist/config.js";
 
 /**
  * Vercel Serverless Function for GET /api (health check)
