@@ -1,6 +1,92 @@
-export default (req, res) => {
-  return res.status(200).json({
-    debug: true,
-    message: "VERCEL HANDLER REACHED"
-  });
+import type { VercelRequest, VercelResponse } from "@vercel/node";
+import type { Request, Response, NextFunction, ErrorRequestHandler } from "express";
+import express from "express";
+import cors from "cors";
+// Vercel treats `server/` as an external package (due to package.json)
+// so it doesn't transpile it. We must import the compiled JS version.
+import * as chatModule from "../server/dist/routes/chat.js";
+
+// ESM/CJS interop fallback
+const chatRouter = (chatModule as any).chatRouter || (chatModule as any).default || chatModule;
+
+/**
+ * Vercel Serverless Function for POST /api/chat
+ *
+ * Vercel file-based routing: /api/chat → api/chat.ts
+ * The chatRouter handles POST "/" which maps to POST /api/chat.
+ *
+ * We do NOT call validateConfig() here — it reads config at module level
+ * and would crash the cold-start. Instead, we let Express + chatRouter
+ * handle the request normally. If env vars are missing, the Foundry call
+ * will fail with a descriptive 502 error from the route handler.
+ */
+
+const app = express();
+
+app.use(cors({
+  origin: true,
+  credentials: true,
+}));
+
+app.use(express.json({ limit: "1mb" }));
+
+// Add logging to see what Express receives
+app.use((req, res, next) => {
+  console.log(`[Express Incoming] method=${req.method} url=${req.url} path=${req.path} originalUrl=${req.originalUrl}`);
+  next();
+});
+
+// Vercel envoie req.url avec le chemin complet "/api/chat".
+// Il faut donc monter le routeur sur "/api/chat" pour que router.post("/") matche correctement.
+app.use("/api/chat", chatRouter as unknown as express.RequestHandler);
+
+// Add logging to prove Express generates the 404
+app.use((req, res, next) => {
+  const debugInfo = {
+    message: "Express 404: Route not matched inside Express stack",
+    receivedUrl: req.url,
+    receivedPath: req.path,
+    originalUrl: req.originalUrl,
+    method: req.method,
+    chatRouterReached: false
+  };
+  console.log(`[Express 404]`, debugInfo);
+  res.status(404).json(debugInfo);
+});
+
+// Catch-all error handler (Express requires the 4-arg signature)
+const errorHandler: ErrorRequestHandler = (
+  err: Error,
+  _req: Request,
+  res: Response,
+  _next: NextFunction,
+) => {
+  console.error("[api/chat] Error:", err);
+  if (!res.headersSent) {
+    res.status(500).json({
+      error: err.message || "Erreur interne du serveur.",
+    });
+  }
+};
+app.use(errorHandler);
+
+console.log("=== API CHAT FILE LOADED ===");
+
+export default (req: VercelRequest, res: VercelResponse) => {
+  console.log("=== VERCEL HANDLER EXECUTED ===", req.method, req.url);
+
+  // Handle CORS preflight
+  if (req.method === "OPTIONS") {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    return res.status(204).end();
+  }
+
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST, OPTIONS");
+    return res.status(405).json({ error: "Method not allowed. Use POST." });
+  }
+
+  return app(req, res);
 };
