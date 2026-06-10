@@ -3,6 +3,9 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "engines": {
+    "node": "20.x"
+  },
   "description": "React SPA chat interface for the AfricaCulture agent on Microsoft AI Foundry (secured by a BFF proxy).",
   "scripts": {
     "dev": "concurrently -n web,bff -c blue,magenta \"npm:dev:web\" \"npm:dev:bff\"",

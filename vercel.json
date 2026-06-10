@@ -1,11 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npm run build && npm run build:server",
+  "buildCommand": "npm run build && npm --prefix server run build",
   "outputDirectory": "dist",
   "installCommand": "npm install && npm install --prefix server",
   "functions": {
     "api/**/*.ts": {
-      "runtime": "nodejs20.x",
       "memory": 1024,
       "maxDuration": 30,
       "includeFiles": "server/dist/**"
