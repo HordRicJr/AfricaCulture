@@ -4,7 +4,6 @@
   "outputDirectory": "dist",
   "installCommand": "npm install && npm install --prefix server",
   "env": {
-    "VITE_API_BASE_URL": "@vite_api_base_url",
     "FOUNDRY_API_KEY": "@foundry_api_key",
     "FOUNDRY_PROJECT_ENDPOINT": "@foundry_project_endpoint",
     "FOUNDRY_AGENT_NAME": "@foundry_agent_name",
