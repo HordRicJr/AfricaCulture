@@ -1,10 +1,11 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { validateConfig } from "../server/src/config";
 
-// Validate configuration at cold-start
-validateConfig();
-
-// /api → health check endpoint
+/**
+ * Vercel Serverless Function for GET /api (health check)
+ *
+ * Lightweight endpoint to verify the function is alive.
+ * Does not validate Foundry config — that's the chat function's concern.
+ */
 export default (req: VercelRequest, res: VercelResponse) => {
   if (req.method === "GET") {
     return res.json({

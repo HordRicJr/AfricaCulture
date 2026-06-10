@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import type { Request, Response, NextFunction, ErrorRequestHandler } from "express";
 import express from "express";
 import cors from "cors";
 import { chatRouter } from "../server/src/routes/chat";
@@ -18,25 +19,34 @@ import { chatRouter } from "../server/src/routes/chat";
 const app = express();
 
 app.use(cors({
-  origin: true,   // Allow all origins — Vercel handles domain security
+  origin: true,
   credentials: true,
 }));
 
 app.use(express.json({ limit: "1mb" }));
-app.use("/", chatRouter);
 
-// Catch-all error handler
-app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+// chatRouter comes from server/src which has its own Express types.
+// The cast avoids a type mismatch between the two Express installations.
+app.use("/", chatRouter as unknown as express.RequestHandler);
+
+// Catch-all error handler (Express requires the 4-arg signature)
+const errorHandler: ErrorRequestHandler = (
+  err: Error,
+  _req: Request,
+  res: Response,
+  _next: NextFunction,
+) => {
   console.error("[api/chat] Error:", err);
   if (!res.headersSent) {
     res.status(500).json({
       error: err.message || "Erreur interne du serveur.",
     });
   }
-});
+};
+app.use(errorHandler);
 
 export default (req: VercelRequest, res: VercelResponse) => {
-  // Only allow POST (and OPTIONS for CORS preflight)
+  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
