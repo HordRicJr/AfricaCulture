@@ -36,9 +36,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// chatRouter comes from server/src which has its own Express types.
-// The cast avoids a type mismatch between the two Express installations.
-app.use("/", chatRouter as unknown as express.RequestHandler);
+// Vercel envoie req.url avec le chemin complet "/api/chat".
+// Il faut donc monter le routeur sur "/api/chat" pour que router.post("/") matche correctement.
+app.use("/api/chat", chatRouter as unknown as express.RequestHandler);
 
 // Add logging to prove Express generates the 404
 app.use((req, res, next) => {
