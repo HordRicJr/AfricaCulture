@@ -3,13 +3,6 @@
   "buildCommand": "npm run build && npm run build:server",
   "outputDirectory": "dist",
   "installCommand": "npm install && npm install --prefix server",
-  "env": {
-    "FOUNDRY_API_KEY": "@foundry_api_key",
-    "FOUNDRY_PROJECT_ENDPOINT": "@foundry_project_endpoint",
-    "FOUNDRY_AGENT_NAME": "@foundry_agent_name",
-    "FOUNDRY_AGENT_VERSION": "@foundry_agent_version",
-    "FOUNDRY_AUTH_MODE": "@foundry_auth_mode"
-  },
   "functions": {
     "api/**/*.ts": {
       "runtime": "nodejs20.x",
